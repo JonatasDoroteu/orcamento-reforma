@@ -1,13 +1,16 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas import MOTIVO_SEM_PRECO, ItemExtraido
-from app.servico_orcamento import calcular_orcamento
+from app.servico_orcamento import ITENS_EXEMPLO, calcular_orcamento
 
 client = TestClient(app)
 
 
-def test_entrada_valida() -> None:
+def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.main.extrair_itens", lambda descricao: ITENS_EXEMPLO)
+
     resposta = client.post(
         "/orcamento",
         json={"descricao": "banheiro de 6 m², trocar piso, revestir paredes até 2,10 m"},

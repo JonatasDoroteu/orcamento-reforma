@@ -23,7 +23,7 @@ TABELA_PRECOS_EXEMPLO: dict[str, _PrecoExemplo] = {
     "revestimento de parede": _PrecoExemplo("87240", Decimal("75.00")),
 }
 
-# Itens fixos no lugar da extração por IA.
+# Itens de exemplo para os testes do endpoint. A extração real fica em servico_ia.
 ITENS_EXEMPLO: list[ItemExtraido] = [
     ItemExtraido(descricao="Piso porcelanato", quantidade=6, unidade="m²"),
     ItemExtraido(descricao="Louça sanitária", quantidade=1, unidade="un"),

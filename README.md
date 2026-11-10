@@ -9,11 +9,11 @@ API que recebe a descrição de uma reforma em texto livre e devolve um orçamen
 | Etapa | Situação |
 |---|---|
 | Estrutura da API, validação e testes | Pronto |
-| Integração com Gemini (extração de itens) | Pendente |
+| Integração com Gemini (extração de itens) | Pronto |
 | Preços reais da tabela SINAPI (DuckDB) | Pendente |
 | Front-end (React) e deploy | Pendente |
 
-Hoje a API responde sempre com itens fixos de exemplo.
+A IA extrai itens, quantidades e unidades. O preço ainda vem da tabela fixa de exemplo. O modelo padrão é `gemini-3.8-flash` (`GEMINI_MODEL` no `.env`). Falha da IA responde 502, sem detalhe interno.
 
 ## Como rodar
 
@@ -22,6 +22,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
+# Preencha GEMINI_API_KEY no arquivo .env. GEMINI_MODEL já vem com gemini-3.8-flash.
 uvicorn app.main:app --reload
 ```
 
@@ -48,8 +49,9 @@ python -m pytest
 
 - `app/main.py`: FastAPI e endpoint
 - `app/schemas.py`: modelos Pydantic de entrada e saída
-- `app/servico_orcamento.py`: cálculo do orçamento
-- `tests/`: testes com Pytest
+- `app/servico_ia.py`: extração de itens com Gemini
+- `app/servico_orcamento.py`: cálculo do orçamento com a tabela de exemplo
+- `tests/`: testes com Pytest; a chamada ao Gemini é simulada
 - `SPEC.md`: especificação do projeto
 
 ## Desenvolvimento com IA

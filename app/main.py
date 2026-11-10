@@ -1,14 +1,19 @@
-from fastapi import FastAPI
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
 
 from app.schemas import EntradaOrcamento, SaidaOrcamento
-from app.servico_orcamento import ITENS_EXEMPLO, calcular_orcamento
+from app.servico_ia import MENSAGEM_ERRO_IA, ErroExtracaoIA, extrair_itens
+from app.servico_orcamento import calcular_orcamento
+
+load_dotenv(override=False)
 
 app = FastAPI(title="Orçamento Rápido de Reforma")
 
 
 @app.post("/orcamento", response_model=SaidaOrcamento)
 def criar_orcamento(entrada: EntradaOrcamento) -> SaidaOrcamento:
-    # A descrição já foi validada. A interpretação por IA entra depois;
-    # por enquanto o cálculo usa itens fixos de exemplo.
-    _ = entrada.descricao
-    return calcular_orcamento(ITENS_EXEMPLO)
+    try:
+        itens = extrair_itens(entrada.descricao)
+    except ErroExtracaoIA:
+        raise HTTPException(status_code=502, detail=MENSAGEM_ERRO_IA)
+    return calcular_orcamento(itens)
