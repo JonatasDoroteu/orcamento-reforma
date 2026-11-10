@@ -58,5 +58,8 @@ python -m pytest
 
 Projeto construído com Cursor, a partir do `SPEC.md`. Cada alteração gerada é lida antes de aceitar e coberta por testes.
 
-Correções feitas por mim em relação ao código gerado:
+Correções e problemas que resolvi:
 - O comando de teste gerado (`pytest`) falhava com `ModuleNotFoundError`; troquei por `python -m pytest`.
+- A API devolvia 502 e a mensagem genérica (de propósito, para não vazar detalhes) escondia a causa. Escrevi um script de diagnóstico que chamava a extração direto e mostrava o erro real: 503 de alta demanda em um modelo e 404 de modelo descontinuado em outro.
+- Testei os modelos disponíveis na minha conta e troquei o modelo pela variável de ambiente `GEMINI_MODEL`, sem mexer no código. Depois atualizei o modelo padrão.
+- O `.env` só é lido ao iniciar o servidor; o `--reload` não o recarrega. Precisei reiniciar o uvicorn para a troca valer.
