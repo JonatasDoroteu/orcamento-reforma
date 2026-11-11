@@ -10,10 +10,12 @@ API que recebe a descrição de uma reforma em texto livre e devolve um orçamen
 |---|---|
 | Estrutura da API, validação e testes | Pronto |
 | Integração com Gemini (extração de itens) | Pronto |
-| Preços reais da tabela SINAPI (DuckDB) | Pendente |
+| Preços da tabela SINAPI (DuckDB), busca de candidatos e escolha pelo modelo | Pronto, sem testes próprios ainda |
+| Composições da SINAPI (serviços com mão de obra) | Pendente |
+| Testes de `buscar_candidatos` e `escolher_codigos` | Pendente |
 | Front-end (React) e deploy | Pendente |
 
-A IA extrai itens, quantidades e unidades. O preço ainda vem da tabela fixa de exemplo. O modelo padrão é `gemini-3.8-flash` (`GEMINI_MODEL` no `.env`). Falha da IA responde 502, sem detalhe interno.
+A IA extrai itens, quantidades e unidades. O código busca candidatos na tabela SINAPI, o modelo escolhe um código entre eles sem ver preço e o preço vem do CSV. O modelo padrão é `gemini-3.8-flash` (`GEMINI_MODEL` no `.env`). Falha da IA responde 502, sem detalhe interno.
 
 ## Como rodar
 
@@ -36,8 +38,7 @@ Documentação interativa: http://127.0.0.1:8000/docs
 { "descricao": "banheiro de 6 m², trocar piso, revestir paredes até 2,10 m, trocar louças" }
 ```
 
-Resposta: `itens` (com preço e total), `nao_orcados` (com o motivo) e `total_estimado`.
-Descrição vazia ou com mais de 2000 caracteres retorna 422.
+Resposta: `itens` (com `descricao_sinapi`, `classificacao`, preço e total), `nao_orcados` (com o motivo), `total_estimado` e `todos_itens_precificados`. Descrição vazia ou com mais de 2000 caracteres retorna 422.
 
 ## Como testar
 
@@ -59,7 +60,7 @@ python -m pytest
 
 ## Desenvolvimento com IA
 
-Projeto construído com Cursor, a partir do `SPEC.md`. Cada alteração gerada é lida antes de aceitar e coberta por testes.
+Projeto construído com Cursor, a partir do `SPEC.md`. Li cada alteração antes de aceitar. Os testes cobrem a extração, o tratamento de erros e o endpoint; a busca de candidatos e a escolha pelo modelo ainda não têm testes próprios (veja Limitações).
 
 Correções e problemas que resolvi:
 - O comando de teste gerado (`pytest`) falhava com `ModuleNotFoundError`; troquei por `python -m pytest`.
