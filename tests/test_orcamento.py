@@ -10,6 +10,10 @@ client = TestClient(app)
 
 def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.main.extrair_itens", lambda descricao: ITENS_EXEMPLO)
+    monkeypatch.setattr(
+        "app.servico_orcamento.escolher_codigos",
+        lambda itens: {item.indice: "1001" for item in itens},
+    )
 
     resposta = client.post(
         "/orcamento",
@@ -22,7 +26,7 @@ def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
     assert corpo["itens"][0]["quantidade"] == 6
     assert corpo["itens"][0]["preco_unitario"] == 89.9
     assert corpo["itens"][0]["total"] == 539.4
-    assert corpo["itens"][0]["codigo_sinapi"] == "87234"
+    assert corpo["itens"][0]["codigo_sinapi"] == "1001"
     assert corpo["total_estimado"] == 539.4
     assert corpo["nao_orcados"] == [
         {"descricao": "Louça sanitária", "motivo": MOTIVO_SEM_PRECO}
