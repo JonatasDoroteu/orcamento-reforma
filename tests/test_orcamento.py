@@ -24,6 +24,8 @@ def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
     corpo = resposta.json()
     assert corpo["itens"][0]["descricao"] == "Piso porcelanato"
     assert corpo["itens"][0]["quantidade"] == 6
+    assert corpo["itens"][0]["descricao_sinapi"] == "PISO PORCELANATO ESMALTADO 60X60"
+    assert corpo["itens"][0]["classificacao"] == "MATERIAL"
     assert corpo["itens"][0]["preco_unitario"] == 89.9
     assert corpo["itens"][0]["total"] == 539.4
     assert corpo["itens"][0]["codigo_sinapi"] == "1001"
@@ -31,6 +33,7 @@ def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
     assert corpo["nao_orcados"] == [
         {"descricao": "Louça sanitária", "motivo": MOTIVO_SEM_PRECO}
     ]
+    assert corpo["orcamento_completo"] is False
 
 
 def test_texto_vazio_retorna_422() -> None:
@@ -49,3 +52,25 @@ def test_item_sem_preco_vai_para_nao_orcados() -> None:
     assert len(saida.nao_orcados) == 1
     assert saida.nao_orcados[0].descricao == "Item inexistente"
     assert saida.nao_orcados[0].motivo == MOTIVO_SEM_PRECO
+
+
+def test_orcamento_completo_quando_nao_ha_itens_nao_orcados(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.servico_orcamento.escolher_codigos",
+        lambda itens: {item.indice: "1001" for item in itens},
+    )
+
+    saida = calcular_orcamento(
+        [ItemExtraido(descricao="Piso porcelanato", quantidade=6, unidade="m²")]
+    )
+
+    assert saida.nao_orcados == []
+    assert saida.orcamento_completo is True
+
+def test_sem_itens_nao_e_orcamento_completo() -> None:
+    saida = calcular_orcamento([])
+
+    assert saida.itens == []
+    assert saida.orcamento_completo is False

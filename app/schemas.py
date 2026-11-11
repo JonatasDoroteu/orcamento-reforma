@@ -30,6 +30,8 @@ class ItemExtraido(BaseModel):
 
 class ItemOrcado(BaseModel):
     descricao: str
+    descricao_sinapi: str
+    classificacao: str
     quantidade: float
     unidade: str
     preco_unitario: float
@@ -46,3 +48,4 @@ class SaidaOrcamento(BaseModel):
     itens: list[ItemOrcado]
     nao_orcados: list[ItemNaoOrcado]
     total_estimado: float
+    orcamento_completo: bool

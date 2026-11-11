@@ -15,7 +15,7 @@ from app.servico_ia import (
     ItemComCandidatos,
     escolher_codigos,
 )
-from app.servico_sinapi import buscar_candidatos, obter_preco
+from app.servico_sinapi import CandidatoSinapi, buscar_candidatos, obter_preco
 
 _CENTAVOS = Decimal("0.01")
 
@@ -31,6 +31,7 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
     nao_orcados: list[ItemNaoOrcado] = []
     fila: list[tuple[ItemExtraido, int | None]] = []
     para_escolha: list[ItemComCandidatos] = []
+    candidatos_por_indice: dict[int, dict[str, CandidatoSinapi]] = {}
 
     for item in itens:
         candidatos = buscar_candidatos(item.descricao, item.unidade)
@@ -38,6 +39,9 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
             fila.append((item, None))
             continue
         indice = len(para_escolha)
+        candidatos_por_indice[indice] = {
+            candidato.codigo: candidato for candidato in candidatos
+        }
         para_escolha.append(
             ItemComCandidatos(
                 indice=indice,
@@ -64,11 +68,6 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
         except ErroExtracaoIA:
             falha_escolha = True
 
-    codigos_por_indice = {
-        item.indice: {candidato.codigo for candidato in item.candidatos}
-        for item in para_escolha
-    }
-
     for item, indice in fila:
         if indice is None:
             nao_orcados.append(
@@ -82,13 +81,14 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
             continue
 
         codigo = escolhas.get(indice)
-        if codigo is None or codigo not in codigos_por_indice[indice]:
+        candidato = candidatos_por_indice[indice].get(codigo or "")
+        if candidato is None:
             nao_orcados.append(
                 ItemNaoOrcado(descricao=item.descricao, motivo=MOTIVO_SEM_ESCOLHA)
             )
             continue
 
-        preco = obter_preco(codigo)
+        preco = obter_preco(candidato.codigo)
         if preco is None:
             nao_orcados.append(
                 ItemNaoOrcado(descricao=item.descricao, motivo=MOTIVO_SEM_PRECO)
@@ -101,11 +101,13 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
         orcados.append(
             ItemOrcado(
                 descricao=item.descricao,
+                descricao_sinapi=candidato.descricao,
+                classificacao=candidato.classificacao,
                 quantidade=item.quantidade,
                 unidade=item.unidade,
                 preco_unitario=float(preco),
                 total=float(total),
-                codigo_sinapi=codigo,
+                codigo_sinapi=candidato.codigo,
             )
         )
 
@@ -114,4 +116,5 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
         itens=orcados,
         nao_orcados=nao_orcados,
         total_estimado=float(total_estimado.quantize(_CENTAVOS, rounding=ROUND_HALF_UP)),
+        orcamento_completo=bool(orcados) and not nao_orcados,
     )
