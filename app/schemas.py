@@ -48,4 +48,4 @@ class SaidaOrcamento(BaseModel):
     itens: list[ItemOrcado]
     nao_orcados: list[ItemNaoOrcado]
     total_estimado: float
-    orcamento_completo: bool
+    todos_itens_precificados: bool

@@ -33,7 +33,7 @@ def test_entrada_valida(monkeypatch: pytest.MonkeyPatch) -> None:
     assert corpo["nao_orcados"] == [
         {"descricao": "Louça sanitária", "motivo": MOTIVO_SEM_PRECO}
     ]
-    assert corpo["orcamento_completo"] is False
+    assert corpo["todos_itens_precificados"] is False
 
 
 def test_texto_vazio_retorna_422() -> None:
@@ -54,7 +54,7 @@ def test_item_sem_preco_vai_para_nao_orcados() -> None:
     assert saida.nao_orcados[0].motivo == MOTIVO_SEM_PRECO
 
 
-def test_orcamento_completo_quando_nao_ha_itens_nao_orcados(
+def test_todos_itens_precificados_quando_nao_ha_itens_nao_orcados(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
@@ -67,10 +67,10 @@ def test_orcamento_completo_quando_nao_ha_itens_nao_orcados(
     )
 
     assert saida.nao_orcados == []
-    assert saida.orcamento_completo is True
+    assert saida.todos_itens_precificados is True
 
-def test_sem_itens_nao_e_orcamento_completo() -> None:
+def test_sem_itens_nao_tem_todos_itens_precificados() -> None:
     saida = calcular_orcamento([])
 
     assert saida.itens == []
-    assert saida.orcamento_completo is False
+    assert saida.todos_itens_precificados is False

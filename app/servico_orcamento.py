@@ -116,5 +116,5 @@ def calcular_orcamento(itens: list[ItemExtraido]) -> SaidaOrcamento:
         itens=orcados,
         nao_orcados=nao_orcados,
         total_estimado=float(total_estimado.quantize(_CENTAVOS, rounding=ROUND_HALF_UP)),
-        orcamento_completo=bool(orcados) and not nao_orcados,
+        todos_itens_precificados=bool(orcados) and not nao_orcados,
     )
