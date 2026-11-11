@@ -67,6 +67,22 @@ Correções e problemas que resolvi:
 - Testei os modelos disponíveis na minha conta e troquei o modelo pela variável de ambiente `GEMINI_MODEL`, sem mexer no código. Depois atualizei o modelo padrão.
 - O `.env` só é lido ao iniciar o servidor; o `--reload` não o recarrega. Precisei reiniciar o uvicorn para a troca valer.
 
+## Como investiguei o 502
+
+**Sintoma:** o endpoint devolvia 502 com uma mensagem genérica. Isso é de propósito: o erro real do Gemini não deve vazar para quem chama a API (há um teste para isso, `test_endpoint_502_nao_vaza_detalhes`). Mas escondia a causa de mim também.
+
+**Como achei a causa:** escrevi o `diagnostico.py`, que chama `extrair_itens` direto, sem passar pela API, e imprime a exceção original (`__cause__`) da falha.
+
+**O que encontrei:**
+- Um modelo com alta demanda (503).
+- Outro modelo que tinha sido descontinuado (404).
+
+**O que mudei:** o modelo passou a vir da variável de ambiente `GEMINI_MODEL`, sem alterar código.
+
+**Pegadinha:** o `--reload` do uvicorn recarrega o código, mas não o `.env`. Depois de mudar o modelo é preciso reiniciar o servidor.
+
+Para rodar o diagnóstico: `python diagnostico.py`
+
 ## Limitações
 
 **O que o projeto faz hoje:** um levantamento preliminar de **materiais** com preços da SINAPI (Bahia, referência 2026-09, sem desoneração). Não é um orçamento de obra.
@@ -80,7 +96,7 @@ Correções e problemas que resolvi:
 - 12 itens extraídos: 8 orçados e 4 não orçados (revestimento de parede, louças, bancada de granito e pintura).
 - Dos 8 orçados, 4 são o item certo como material (tomada, interruptor, torneira, chuveiro) e 4 são só uma parte do serviço pedido (dois pisos, forro de gesso "sem colocação" e a folha da porta).
 - Nenhum item foi precificado como serviço, com mão de obra.
-- Uma das 8 chamadas retornou 502 (indisponibilidade do modelo) na primeira tentativa e funcionou na repetição.
+- Uma das 8 chamadas retornou 502 na primeira tentativa e funcionou na repetição; não investiguei a causa, mas já vi 503 de alta demanda do modelo neste projeto.
 
 É uma amostra pequena e a classificação é minha. Serve para mostrar o tipo de erro, não para medir precisão.
 
