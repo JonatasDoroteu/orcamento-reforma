@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, field_validator
 
 LIMITE_DESCRICAO = 2_000
 MOTIVO_SEM_PRECO = "item não encontrado na tabela SINAPI"
+MOTIVO_SEM_ESCOLHA = "nenhum código SINAPI compatível foi escolhido"
+MOTIVO_FALHA_ESCOLHA = "não foi possível escolher o código na tabela SINAPI"
 
 
 class EntradaOrcamento(BaseModel):
@@ -28,6 +30,8 @@ class ItemExtraido(BaseModel):
 
 class ItemOrcado(BaseModel):
     descricao: str
+    descricao_sinapi: str
+    classificacao: str
     quantidade: float
     unidade: str
     preco_unitario: float
@@ -44,3 +48,4 @@ class SaidaOrcamento(BaseModel):
     itens: list[ItemOrcado]
     nao_orcados: list[ItemNaoOrcado]
     total_estimado: float
+    todos_itens_precificados: bool

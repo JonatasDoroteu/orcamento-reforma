@@ -1,0 +1,9 @@
+codigo;descricao;unidade;origem_preco;classificacao;uf;preco;regime;referencia;arquivo_origem
+1001;PISO PORCELANATO ESMALTADO 60X60;m2;CR;MATERIAL;BA;89,90;sem_desoneracao;2026-09;fixture.xlsx
+1002;REVESTIMENTO CERAMICO PARA PAREDE;m²;CR;MATERIAL;BA;45,50;sem_desoneracao;2026-09;fixture.xlsx
+1003;TINTA ACRÍLICA BRANCA;l;CR;MATERIAL;BA;32,00;sem_desoneracao;2026-09;fixture.xlsx
+1004;ARGAMASSA COLANTE AC-I;kg;CR;MATERIAL;BA;1,25;sem_desoneracao;2026-09;fixture.xlsx
+1005;VASO SANITARIO COM CAIXA ACOPLADA;un;CR;MATERIAL;BA;250,00;sem_desoneracao;2026-09;fixture.xlsx
+1006;PORTA DE MADEIRA LISA;un;CR;MATERIAL;BA;180,00;com_desoneracao;2026-09;fixture.xlsx
+1007;INSTALAÇÃO DE PISO PORCELANATO;m²;CR;SERVIÇOS;BA;35,10;sem_desoneracao;2026-09;fixture.xlsx
+1008;CABO FLEXIVEL 2,5 MM;m;CR;MATERIAL;BA;3,40;sem_desoneracao;2026-09;fixture.xlsx
