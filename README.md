@@ -47,11 +47,14 @@ python -m pytest
 
 ## Estrutura
 
-- `app/main.py`: FastAPI e endpoint
+- `app/main.py`: FastAPI e endpoint `POST /orcamento`
 - `app/schemas.py`: modelos Pydantic de entrada e saída
-- `app/servico_ia.py`: extração de itens com Gemini
-- `app/servico_orcamento.py`: cálculo do orçamento com a tabela de exemplo
-- `tests/`: testes com Pytest; a chamada ao Gemini é simulada
+- `app/servico_ia.py`: extração de itens do texto e escolha do código SINAPI entre candidatos, com Gemini (o modelo nunca vê preço)
+- `app/servico_sinapi.py`: carrega o CSV no DuckDB, busca candidatos por descrição e unidade e devolve o preço por código
+- `app/servico_orcamento.py`: busca candidatos, pede a escolha ao modelo, valida que o código está entre os candidatos e lê o preço da tabela
+- `data/insumos_limpos.csv`: insumos da SINAPI (Bahia, referência 2026-09, sem desoneração)
+- `tests/`: testes com Pytest; a chamada ao Gemini é simulada e há um CSV pequeno em `tests/fixtures/`
+- `avaliacao.py`: script que roda descrições de exemplo no endpoint, para a avaliação manual
 - `SPEC.md`: especificação do projeto
 
 ## Desenvolvimento com IA
@@ -63,3 +66,26 @@ Correções e problemas que resolvi:
 - A API devolvia 502 e a mensagem genérica (de propósito, para não vazar detalhes) escondia a causa. Escrevi um script de diagnóstico que chamava a extração direto e mostrava o erro real: 503 de alta demanda em um modelo e 404 de modelo descontinuado em outro.
 - Testei os modelos disponíveis na minha conta e troquei o modelo pela variável de ambiente `GEMINI_MODEL`, sem mexer no código. Depois atualizei o modelo padrão.
 - O `.env` só é lido ao iniciar o servidor; o `--reload` não o recarrega. Precisei reiniciar o uvicorn para a troca valer.
+
+## Limitações
+
+**O que o projeto faz hoje:** um levantamento preliminar de **materiais** com preços da SINAPI (Bahia, referência 2026-09, sem desoneração). Não é um orçamento de obra.
+
+**A tabela usada é de insumos, não de composições.** Os preços vêm do arquivo de insumos da SINAPI. Um insumo é um material, uma mão de obra ou um equipamento avulso. Um serviço como "trocar piso" depende de composições (material + mão de obra + equipamento por unidade de serviço), que ainda não estão no projeto. Por isso, o `total_estimado` é **parcial**: não inclui demolição, mão de obra, acessórios nem perdas.
+
+**O que significa `todos_itens_precificados`.** O campo é `true` quando todos os itens extraídos do texto receberam um código SINAPI. Não significa que a obra está coberta: "trocar porta" pode vir como `true` só com o preço da folha da porta.
+
+**Avaliação manual (8 descrições, 11/11/2026).** Testei o endpoint com 8 descrições que eu mesmo escrevi (banheiro, cozinha, pintura, elétrica, hidráulica, forro, porta e um texto sem sentido) e li a descrição oficial de cada código escolhido:
+
+- 12 itens extraídos: 8 orçados e 4 não orçados (revestimento de parede, louças, bancada de granito e pintura).
+- Dos 8 orçados, 4 são o item certo como material (tomada, interruptor, torneira, chuveiro) e 4 são só uma parte do serviço pedido (dois pisos, forro de gesso "sem colocação" e a folha da porta).
+- Nenhum item foi precificado como serviço, com mão de obra.
+- Uma das 8 chamadas retornou 502 (indisponibilidade do modelo) na primeira tentativa e funcionou na repetição.
+
+É uma amostra pequena e a classificação é minha. Serve para mostrar o tipo de erro, não para medir precisão.
+
+**Outras limitações conhecidas**
+- O modelo escolhe variantes sem que o usuário peça (por exemplo, cerâmica em vez de porcelanato).
+- Unidades incompatíveis (como "2 metros" para uma bancada vendida em m² ou un) levam o item para "não orçado", e isso é intencional: prefiro não orçar a orçar errado.
+- Só existem preços da Bahia.
+- A busca de candidatos e a escolha pelo modelo ainda não têm testes próprios.
